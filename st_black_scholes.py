@@ -1,6 +1,7 @@
 import streamlit as st
 import math
 import pandas as pd
+import matplotlib.pyplot as plt
 from scipy.stats import norm
 from yahooquery import Ticker
 
@@ -60,6 +61,33 @@ def fetch_option_data(stock):
     return output_df
 
 
+def plot_graphs(data):
+    # Create columns for side-by-side layout
+    col1, col2 = st.columns(2)
+
+    # Price Distribution of Options
+    with col1:
+        st.subheader("Price Distribution")
+        fig1, ax1 = plt.subplots()
+        ax1.hist(data['mid_price'], bins=20, alpha=0.7, edgecolor="black")
+        ax1.set_title("Mid Price Distribution")
+        ax1.set_xlabel("Mid Price")
+        ax1.set_ylabel("Frequency")
+        st.pyplot(fig1)
+
+    # Black-Scholes Value vs. Mid Price
+    with col2:
+        st.subheader("Black-Scholes vs. Mid Price")
+        fig2, ax2 = plt.subplots()
+        ax2.scatter(data['mid_price'], data['bs_price'], alpha=0.6)
+        ax2.set_title("Black-Scholes vs. Mid Price")
+        ax2.set_xlabel("Mid Price")
+        ax2.set_ylabel("Black-Scholes Price")
+        st.pyplot(fig2)
+
+
+
+
 def main():
     st.title("Black-Scholes Option Pricing")
     st.write("Calculate theoretical option prices using the Black-Scholes model and compare them with market prices.")
@@ -80,6 +108,9 @@ def main():
                 # Allow user to download the results as a CSV file
                 csv = results.to_csv(index=False)
                 st.download_button("Download CSV", data=csv, file_name=f"{stock}_options.csv", mime="text/csv")
+
+                # Display graphs
+                plot_graphs(results)
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
